@@ -15,7 +15,11 @@ class ArticlePublisherPipelineStack(Stack):
                 input=pipelines.CodePipelineSource.git_hub(
                     repo_string="cullancarey/ArticlePublisher", branch="develop"
                 ),
-                commands=["npm install -g aws-cdk && pip install -r requirements.txt"],
+                commands=[
+                    "npm install -g aws-cdk",
+                    "python -m pip install -r requirements.txt",
+                    "cdk synth",
+                ],
             ),
             docker_enabled_for_synth=True,
         )
