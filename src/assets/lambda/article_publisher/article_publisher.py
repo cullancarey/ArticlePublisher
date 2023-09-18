@@ -56,7 +56,7 @@ def generate_article():
             },
             {
                 "role": "user",
-                "content": "Please write an blog I can post on Medium about a random AWS service. Please choose the service and then end the article with 'Thanks for reading, Cullan Carey.' Also, format it in html please.",
+                "content": "Please write an blog I can post on Medium about a random AWS service. Please choose the service and do not generate a blog with something like [service]. Please pick the service to write about yourself. I am asking you to do this programatically through the api and then posting it to Medium through their api. So I do not have the capability to edit the content you return so I would like it to be as ready to post as possible. Please end the article with 'Thanks for reading, Cullan Carey.' Also, format it in html please.",
             },
         ],
         max_tokens=1000,
