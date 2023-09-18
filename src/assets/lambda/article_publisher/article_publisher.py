@@ -56,7 +56,7 @@ def generate_article():
             },
             {
                 "role": "user",
-                "content": "Please write an article I can post on Medium about a popular AWS topic. format it in html please.",
+                "content": "Please write an blog I can post on Medium about a random AWS service. Please choose the service and then end the article with 'Thanks for reading, Cullan Carey.' Also, format it in html please.",
             },
         ],
         max_tokens=1000,
@@ -171,6 +171,3 @@ def lambda_handler(event, context):
             title=title,
             linkedin_access_token=LINKEDIN_ACCESS_TOKEN,
         )
-
-
-lambda_handler(event=None, context=None)

@@ -3,7 +3,6 @@
 import os
 from aws_cdk import App, Environment, Tags, Stack
 from stacks.article_publisher_stack import ArticlePublisherStack
-from stacks.article_publisher_pipeline_stack import ArticlePublisherPipelineStack
 
 
 def add_tags(
@@ -40,9 +39,9 @@ default_tags = {
 add_tags(app=app, default_tags=default_tags)
 
 # Add the new pipeline stack
-article_publisher_stack = ArticlePublisherPipelineStack(
+article_publisher_stack = ArticlePublisherStack(
     scope=app,
-    id="ArticlePublisherPipelineStack",
+    id="ArticlePublisherStack",
     description="Stack to deploy the resources for my article publisher pipeline",
     env=env,
 )
