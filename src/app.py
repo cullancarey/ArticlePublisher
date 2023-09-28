@@ -21,7 +21,7 @@ app = App()
 
 
 environment = os.environ.get("ENVIRONMENT")
-# environment = "production"
+environment = "production"
 environment_config = app.node.try_get_context(environment)
 account_id = environment_config.get("account_id")
 region = environment_config.get("region")

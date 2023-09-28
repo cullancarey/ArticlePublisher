@@ -5,10 +5,11 @@ import boto3
 import os
 import requests
 from html.parser import HTMLParser
+import random
 
 
 # Set up logging
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
@@ -31,11 +32,32 @@ class MyHTMLParser(HTMLParser):
             self.title = data
 
 
+def get_services():
+    # Create a Boto3 session (this will use your AWS credentials from environment variables, AWS CLI, or IAM role)
+    session = boto3.Session()
+
+    # Create a client for the AWS Pricing API
+    pricing_client = session.client("pricing", region_name="us-east-1")
+
+    # Get the first page of service results
+    response = pricing_client.describe_services()
+
+    # Extract the service names from the response
+    services = [service["ServiceCode"] for service in response["Services"]]
+
+    # Handle pagination to get additional services, if there are more than one page of results
+    while "NextToken" in response:
+        response = pricing_client.describe_services(NextToken=response["NextToken"])
+        services.extend([service["ServiceCode"] for service in response["Services"]])
+
+    # Now `services` contains a list of service names
+    return services
+
+
 def get_param(
     param_name: str,
 ):
     """Function to get parameter value from parameter store"""
-
     client = boto3.client("ssm")
     try:
         logger.info(f"Retrieving parameter {param_name}...")
@@ -46,7 +68,7 @@ def get_param(
 
 
 # Generate article using OpenAI API
-def generate_article():
+def generate_article(service):
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
@@ -56,7 +78,7 @@ def generate_article():
             },
             {
                 "role": "user",
-                "content": "Please write an blog I can post on Medium about a random AWS service. Please choose the service and do not generate a blog with something like [service]. Please pick the service to write about yourself. I am asking you to do this programatically through the api and then posting it to Medium through their api. So I do not have the capability to edit the content you return so I would like it to be as ready to post as possible. Please end the article with 'Thanks for reading, Cullan Carey.' Also, format it in html please.",
+                "content": f"Please write an blog I can post on Medium about the AWS service {service}. Please choose the service and do not generate a blog with something like [service]. Please pick the service to write about yourself. I am asking you to do this programatically through the api and then posting it to Medium through their api. So I do not have the capability to edit the content you return so I would like it to be as ready to post as possible. Please end the article with 'Thanks for reading, Cullan Carey.' Also, format it in html please.",
             },
         ],
         max_tokens=1000,
@@ -147,8 +169,11 @@ def lambda_handler(event, context):
     # Initialize OpenAI API
     openai.api_key = get_param(param_name="openai_api_token")
 
+    # Get list of services
+    service_list = get_services()
+
     # Generate an article
-    article_content = generate_article()
+    article_content = generate_article(service=random.choice(service_list))
 
     parser = MyHTMLParser()
     parser.feed(article_content)
@@ -171,3 +196,6 @@ def lambda_handler(event, context):
             title=title,
             linkedin_access_token=LINKEDIN_ACCESS_TOKEN,
         )
+
+
+lambda_handler(event=None, context=None)
