@@ -196,6 +196,3 @@ def lambda_handler(event, context):
             title=title,
             linkedin_access_token=LINKEDIN_ACCESS_TOKEN,
         )
-
-
-lambda_handler(event=None, context=None)

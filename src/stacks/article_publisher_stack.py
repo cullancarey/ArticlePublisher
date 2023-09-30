@@ -6,6 +6,7 @@ from aws_cdk import (
     aws_logs as logs,
     aws_events as events,
     aws_events_targets as event_targets,
+    aws_iam as iam,
 )
 from constructs import Construct
 
@@ -30,6 +31,16 @@ class ArticlePublisherStack(Stack):
             architecture=_lambda.Architecture.X86_64,
             log_retention=logs.RetentionDays.ONE_YEAR,
         )
+
+        # Define a policy statement
+        statement = iam.PolicyStatement(
+            actions=["pricing:DescribeServices"],
+            resources=["*"],  # Adjust the resources as needed
+            effect=iam.Effect.ALLOW,
+        )
+
+        # Add the policy statement to the Lambda function's execution role
+        article_publisher_lambda.role.add_to_policy(statement)
 
         # Grant read access to the Lambda function for each SSM parameter
 
