@@ -78,7 +78,7 @@ def generate_article(service):
             },
             {
                 "role": "user",
-                "content": f"Please write an blog I can post on Medium about the AWS service {service}. Please choose the service and do not generate a blog with something like [service]. Please pick the service to write about yourself. I am asking you to do this programatically through the api and then posting it to Medium through their api. So I do not have the capability to edit the content you return so I would like it to be as ready to post as possible. Please end the article with 'Thanks for reading, Cullan Carey.' Also, format it in html please.",
+                "content": f"Please write an blog I can post on Medium about the AWS service {service}. I am asking you to do this programatically through the api and then posting it to Medium through their api. So I do not have the capability to edit the content you return so I would like it to be as ready to post as possible. Please end the article with 'Subscribe for more: https://cullancarey.medium.com/subscribe. Thanks for reading, Cullan Carey.' Also, format it in html please.",
             },
         ],
         max_tokens=1000,
@@ -98,7 +98,14 @@ def publish_article(title, content, medium_api_token, medium_user_id):
             "title": title,
             "content": content,
             "contentFormat": "html",
-            "tags": ["AWS", "Cloud Computing", "Technology"],
+            "tags": [
+                "AWS",
+                "Cloud Computing",
+                "Technology",
+                "ChatGPT",
+                "AI",
+                "Amazon Web Services",
+            ],
             "publishStatus": "public",
         }
     )
