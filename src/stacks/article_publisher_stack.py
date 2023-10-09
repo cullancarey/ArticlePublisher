@@ -53,6 +53,10 @@ class ArticlePublisherStack(Stack):
                 "medium_user_id",
                 "openai_api_token",
                 "linkedin_access_token",
+                "cullan_twitter_api_key",
+                "cullan_twitter_access_token",
+                "cullan_twitter_access_secret_token",
+                "cullan_twitter_secret_key",
             ]
         ]
 
