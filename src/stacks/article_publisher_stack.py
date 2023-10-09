@@ -41,6 +41,7 @@ class ArticlePublisherStack(Stack):
 
         # Add the policy statement to the Lambda function's execution role
         article_publisher_lambda.role.add_to_policy(statement)
+        article_publisher_lambda.role.a
 
         # Grant read access to the Lambda function for each SSM parameter
 
@@ -53,6 +54,10 @@ class ArticlePublisherStack(Stack):
                 "medium_user_id",
                 "openai_api_token",
                 "linkedin_access_token",
+                "cullan_twitter_api_key",
+                "cullan_twitter_access_token",
+                "cullan_twitter_secret_token",
+                "cullan_twitter_secret_key",
             ]
         ]
 

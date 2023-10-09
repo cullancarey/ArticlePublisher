@@ -6,6 +6,7 @@ import os
 import requests
 from html.parser import HTMLParser
 import random
+import tweepy
 
 
 # Set up logging
@@ -93,19 +94,30 @@ def publish_article(title, content, medium_api_token, medium_user_id):
         "Authorization": f"Bearer {medium_api_token}",
         "Content-Type": "application/json",
     }
+    tags = [
+        "AWS",
+        "Cloud Computing",
+        "OpenAI",
+        "GPT-3",
+        "Medium",
+        "Artificial Intelligence",
+        "LinkedIn",
+        "Python",
+        "Boto3",
+        "Automation",
+        "Programming",
+        "DevOps",
+        "Serverless",
+        "NLP",
+        "Machine Learning",
+    ]
+
     payload = json.dumps(
         {
             "title": title,
             "content": content,
             "contentFormat": "html",
-            "tags": [
-                "AWS",
-                "Cloud Computing",
-                "Technology",
-                "ChatGPT",
-                "AI",
-                "Amazon Web Services",
-            ],
+            "tags": tags,
             "publishStatus": "public",
         }
     )
@@ -126,7 +138,7 @@ def publish_article(title, content, medium_api_token, medium_user_id):
         logger.error(f"Failed to publish article to Medium: {e}")
 
 
-def share_on_linkedin(article_url, title, linkedin_access_token):
+def share_on_linkedin(article_url, title, linkedin_access_token, post_content):
     headers = {
         "Authorization": f"Bearer {linkedin_access_token}",
         "Content-Type": "application/json",
@@ -138,15 +150,13 @@ def share_on_linkedin(article_url, title, linkedin_access_token):
             "lifecycleState": "PUBLISHED",
             "specificContent": {
                 "com.linkedin.ugc.ShareContent": {
-                    "shareCommentary": {
-                        "text": "Check out my latest blog on Medium written by ChatGPT!"
-                    },
+                    "shareCommentary": {"text": post_content},
                     "shareMediaCategory": "ARTICLE",
                     "media": [
                         {
                             "status": "READY",
                             "description": {
-                                "text": "Learning more about AWS by using chatGpt to write blogs for Medium!"
+                                "text": "Learning more about AWS by using ChatGPT to write blogs for Medium!"
                             },
                             "originalUrl": article_url,
                             "title": {"text": title},
@@ -165,6 +175,30 @@ def share_on_linkedin(article_url, title, linkedin_access_token):
         logger.info("Successfully shared the article link on LinkedIn.")
     else:
         logger.error(f"Failed to share article link on LinkedIn: {response.content}")
+
+
+def post_tweet(tweet_content):
+    try:
+        logger.info("Creating twitter client.")
+        client_id = get_param(f"cullan_twitter_api_key")
+        access_token = get_param(f"cullan_twitter_access_token")
+        access_token_secret = get_param(f"cullan_twitter_secret_token")
+        client_secret = get_param(f"cullan_twitter_secret_key")
+
+        # Create API object
+        twitter_client = tweepy.Client(
+            consumer_key=client_id,
+            consumer_secret=client_secret,
+            access_token=access_token,
+            access_token_secret=access_token_secret,
+        )
+        # Post the tweet
+        logger.info(f"Sending tweet with content: {tweet_content}")
+        response = twitter_client.create_tweet(text=tweet_content)
+    except Exception as e:
+        logger.error(f"An error occurred creating tweet: {e}")
+    else:
+        logger.info(f"Tweet posted successfully! Tweet info: {response}")
 
 
 def lambda_handler(event, context):
@@ -196,10 +230,15 @@ def lambda_handler(event, context):
     )
     # article_url = "https://medium.com/@cullancarey/demystifying-aws-s3-secure-scalable-and-simple-storage-solutions-265f3b8c11a0"
 
+    post_content = f"Check out my latest blog on Medium written by ChatGPT! #AWS #CloudComputing #OpenAI #GPT3 #Medium #ArtificialIntelligence #LinkedIn #Python #Boto3 #Automation #Programming #DevOps #Serverless #NLP #MachineLearning"
+
     # If successfully published on Medium, share on LinkedIn
     if article_url:
         share_on_linkedin(
             article_url=article_url,
             title=title,
             linkedin_access_token=LINKEDIN_ACCESS_TOKEN,
+            post_content=post_content,
         )
+
+        post_tweet(tweet_content=f"{post_content}\n{article_url}")
