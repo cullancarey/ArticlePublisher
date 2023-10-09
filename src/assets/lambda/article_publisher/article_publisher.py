@@ -2,7 +2,6 @@ import json
 import openai
 import logging
 import boto3
-import os
 import requests
 from html.parser import HTMLParser
 import random
@@ -222,23 +221,26 @@ def lambda_handler(event, context):
     # title = "Demystifying AWS S3: Secure, Scalable, and Simple Storage Solutions"
 
     # Publish the article on Medium and get the article URL
-    article_url = publish_article(
-        title=title,
-        content=article_content,
-        medium_api_token=MEDIUM_API_TOKEN,
-        medium_user_id=MEDIUM_USER_ID,
-    )
-    # article_url = "https://medium.com/@cullancarey/demystifying-aws-s3-secure-scalable-and-simple-storage-solutions-265f3b8c11a0"
+    # article_url = publish_article(
+    #     title=title,
+    #     content=article_content,
+    #     medium_api_token=MEDIUM_API_TOKEN,
+    #     medium_user_id=MEDIUM_USER_ID,
+    # )
+    article_url = "https://medium.com/@cullancarey/demystifying-aws-s3-secure-scalable-and-simple-storage-solutions-265f3b8c11a0"
 
     post_content = f"Check out my latest blog on Medium written by ChatGPT! #AWS #CloudComputing #OpenAI #GPT3 #Medium #ArtificialIntelligence #LinkedIn #Python #Boto3 #Automation #Programming #DevOps #Serverless #NLP #MachineLearning"
 
     # If successfully published on Medium, share on LinkedIn
     if article_url:
-        share_on_linkedin(
-            article_url=article_url,
-            title=title,
-            linkedin_access_token=LINKEDIN_ACCESS_TOKEN,
-            post_content=post_content,
-        )
+        # share_on_linkedin(
+        #     article_url=article_url,
+        #     title=title,
+        #     linkedin_access_token=LINKEDIN_ACCESS_TOKEN,
+        #     post_content=post_content,
+        # )
 
         post_tweet(tweet_content=f"{post_content}\n{article_url}")
+
+
+lambda_handler(event=None, context=None)
