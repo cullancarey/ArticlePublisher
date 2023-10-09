@@ -55,7 +55,7 @@ class ArticlePublisherStack(Stack):
                 "linkedin_access_token",
                 "cullan_twitter_api_key",
                 "cullan_twitter_access_token",
-                "cullan_twitter_secret_token",
+                "cullan_twitter_access_secret_token",
                 "cullan_twitter_secret_key",
             ]
         ]

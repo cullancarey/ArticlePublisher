@@ -182,7 +182,7 @@ def post_tweet(tweet_content):
         logger.info("Creating twitter client.")
         client_id = get_param(f"cullan_twitter_api_key")
         access_token = get_param(f"cullan_twitter_access_token")
-        access_token_secret = get_param(f"cullan_twitter_secret_token")
+        access_token_secret = get_param(f"cullan_twitter_access_secret_token")
         client_secret = get_param(f"cullan_twitter_secret_key")
 
         # Create API object
