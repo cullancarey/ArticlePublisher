@@ -27,7 +27,7 @@ class ArticlePublisherStack(Stack):
             code=_lambda.DockerImageCode.from_image_asset(
                 "assets/lambda/article_publisher/"
             ),
-            timeout=Duration.seconds(120),
+            timeout=Duration.seconds(300),
             architecture=_lambda.Architecture.X86_64,
             log_retention=logs.RetentionDays.ONE_YEAR,
         )
