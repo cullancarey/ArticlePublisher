@@ -57,7 +57,9 @@ def get_services():
         while "NextToken" in response:
             logger.debug("Fetching additional service results.")
             response = pricing_client.describe_services(NextToken=response["NextToken"])
-            services.extend([service["ServiceCode"] for service in response["Services"]])
+            services.extend(
+                [service["ServiceCode"] for service in response["Services"]]
+            )
 
         logger.debug(f"Found {len(services)} services.")
         return services
@@ -230,11 +232,12 @@ def share_on_linkedin(article_url, title, linkedin_access_token, post_content):
         else:
             logger.error(
                 f"Failed to share article link on LinkedIn, received status code {response.status_code}: {response.content}"
-                return {
-            "statusCode": 500,
-            "body": f"Failed to share article link on LinkedIn, received status code {response.status_code}: {response.content}",
-        }
             )
+            return {
+                "statusCode": 500,
+                "body": f"Failed to share article link on LinkedIn, received status code {response.status_code}: {response.content}",
+            }
+
     except Exception as e:
         logger.error(
             f"An unknown error occurred while sharing the article link on LinkedIn: {e}"
