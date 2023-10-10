@@ -295,6 +295,10 @@ def lambda_handler(event, context):
         logger.info("Generating an article.")
         article_content = generate_article(service=random.choice(service_list))
 
+        if not article_content:
+            logger.error("No blog generated. Exiting...")
+            return
+
         parser = MyHTMLParser()
         parser.feed(article_content)
         title = parser.title
