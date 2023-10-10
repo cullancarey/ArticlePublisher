@@ -100,7 +100,7 @@ def generate_article(service):
             return None
     except Exception as e:
         logger.error(
-            f"An unknown error occurred while generating the article: {str(e)}"
+            f"An unknown error occurred while generating the article: {str(e)}\nApi response: {response}"
         )
         return None
 
