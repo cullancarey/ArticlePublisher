@@ -95,12 +95,12 @@ def generate_article(service):
             return blog_content
         else:
             logger.warning(
-                "Received unexpected response from OpenAI API. No 'choices' in the response."
+                f"Received unexpected response from OpenAI API. No 'choices' in the response. Api response: {response}"
             )
             return None
     except Exception as e:
         logger.error(
-            f"An unknown error occurred while generating the article: {str(e)}\nApi response: {response}"
+            f"An unknown error occurred while generating the article: {str(e)}"
         )
         return None
 
