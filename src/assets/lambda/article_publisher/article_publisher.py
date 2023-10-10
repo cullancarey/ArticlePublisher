@@ -265,7 +265,7 @@ def post_tweet(tweet_content):
         logger.error(f"An unknown error occurred while attempting to post tweet: {e}")
     else:
         if response:
-            logger.info(f"Tweet posted successfully! Tweet ID: {response.id}")
+            logger.info(f"Tweet posted successfully! Tweet ID: {response}")
         else:
             logger.warning("Tweet was not posted, and no error was raised.")
 
