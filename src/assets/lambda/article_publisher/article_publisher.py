@@ -33,25 +33,38 @@ class MyHTMLParser(HTMLParser):
 
 
 def get_services():
-    # Create a Boto3 session (this will use your AWS credentials from environment variables, AWS CLI, or IAM role)
-    session = boto3.Session()
+    try:
+        # Create a Boto3 session
+        logger.debug("Creating Boto3 session.")
+        session = boto3.Session()
 
-    # Create a client for the AWS Pricing API
-    pricing_client = session.client("pricing", region_name="us-east-1")
+        # Create a client for the AWS Pricing API
+        logger.debug("Creating AWS Pricing client.")
+        pricing_client = session.client("pricing", region_name="us-east-1")
 
-    # Get the first page of service results
-    response = pricing_client.describe_services()
+        # Get the first page of service results
+        logger.info("Fetching AWS services.")
+        response = pricing_client.describe_services()
 
-    # Extract the service names from the response
-    services = [service["ServiceCode"] for service in response["Services"]]
+        if "Services" not in response:
+            logger.error("No services found in the response.")
+            return None
 
-    # Handle pagination to get additional services, if there are more than one page of results
-    while "NextToken" in response:
-        response = pricing_client.describe_services(NextToken=response["NextToken"])
-        services.extend([service["ServiceCode"] for service in response["Services"]])
+        # Extract the service names from the response
+        services = [service["ServiceCode"] for service in response["Services"]]
 
-    # Now `services` contains a list of service names
-    return services
+        # Handle pagination to get additional services
+        while "NextToken" in response:
+            logger.debug("Fetching additional service results.")
+            response = pricing_client.describe_services(NextToken=response["NextToken"])
+            services.extend([service["ServiceCode"] for service in response["Services"]])
+
+        logger.debug(f"Found {len(services)} services.")
+        return services
+
+    except Exception as e:
+        logger.error(f"An error occurred retreiving services from AWS: {e}")
+        return None
 
 
 def get_param(
@@ -64,6 +77,7 @@ def get_param(
         response = client.get_parameter(Name=param_name, WithDecryption=True)
     except Exception as e:
         logger.error(f"Error retrieving parameter: {param_name} with error: {e}")
+        return None
     return response["Parameter"]["Value"]
 
 
@@ -143,7 +157,7 @@ def publish_article(title, content, medium_api_token, medium_user_id):
 
         if response.status_code == 201:
             logger.info(f"Successfully published article with title: {title}")
-            article_url = response.json().get("data", {}).get("url", "URL not found.")
+            article_url = response.json().get("data", {}).get("url", None)
             logger.debug(f"Article URL: {article_url}")
             return article_url
         elif response.status_code == 400:
@@ -216,16 +230,19 @@ def share_on_linkedin(article_url, title, linkedin_access_token, post_content):
         else:
             logger.error(
                 f"Failed to share article link on LinkedIn, received status code {response.status_code}: {response.content}"
+                return {
+            "statusCode": 500,
+            "body": f"Failed to share article link on LinkedIn, received status code {response.status_code}: {response.content}",
+        }
             )
-
-    except requests.exceptions.RequestException as e:
-        logger.error(
-            f"Network error while trying to share the article link on LinkedIn: {e}"
-        )
     except Exception as e:
         logger.error(
             f"An unknown error occurred while sharing the article link on LinkedIn: {e}"
         )
+        return {
+            "statusCode": 500,
+            "body": f"An unknown error occurred while sharing the article link on LinkedIn: {e}",
+        }
 
 
 def post_tweet(tweet_content):
@@ -240,7 +257,10 @@ def post_tweet(tweet_content):
         # Check for empty credentials
         if not all([client_id, access_token, access_token_secret, client_secret]):
             logger.error("One or more Twitter API credentials are missing.")
-            return
+            return {
+                "statusCode": 500,
+                "body": "One or more Twitter API credentials are missing.",
+            }
 
         # Create API object
         twitter_client = tweepy.Client(
@@ -253,16 +273,20 @@ def post_tweet(tweet_content):
         # Validate client creation
         if not twitter_client:
             logger.error("Failed to create Twitter client.")
-            return
+            return {
+                "statusCode": 500,
+                "body": f"An unknown error occurred while attempting to create twitter client: {e}",
+            }
 
         # Attempt to post the tweet
         logger.info(f"Attempting to send tweet with content: {tweet_content}")
         response = twitter_client.create_tweet(text=tweet_content)
-
-    except tweepy.TweepError as e:
-        logger.error(f"Tweepy Error: Failed to post tweet due to {e}")
     except Exception as e:
         logger.error(f"An unknown error occurred while attempting to post tweet: {e}")
+        return {
+            "statusCode": 500,
+            "body": f"An unknown error occurred while attempting to post tweet: {e}",
+        }
     else:
         if response:
             logger.info(f"Tweet posted successfully! Tweet ID: {response}")
@@ -288,23 +312,30 @@ def lambda_handler(event, context):
             return {"statusCode": 400, "body": "Bad Request: Missing parameters."}
 
         # Get list of services
-        logger.info("Fetching list of services.")
         service_list = get_services()
 
+        if service_list is None:
+            logger.error("Error retrieving services from AWS.")
+            return {
+                "statusCode": 500,
+                "body": "Internal Server Error: FError retrieving services from AWS.",
+            }
+
         # Generate an article
-        logger.info("Generating an article.")
         article_content = generate_article(service=random.choice(service_list))
 
         if article_content is None:
             logger.error("No blog generated. Exiting...")
-            return
+            return {
+                "statusCode": 500,
+                "body": "Internal Server Error: Failed to generate article from open ai.",
+            }
 
         parser = MyHTMLParser()
         parser.feed(article_content)
         title = parser.title
 
         # Publish the article on Medium and get the article URL
-        logger.info("Publishing the article on Medium.")
         article_url = publish_article(
             title=title,
             content=article_content,
@@ -312,7 +343,7 @@ def lambda_handler(event, context):
             medium_user_id=MEDIUM_USER_ID,
         )
 
-        if not article_url:
+        if article_url is None:
             logger.error("Failed to publish article on Medium.")
             return {
                 "statusCode": 500,
@@ -326,7 +357,6 @@ def lambda_handler(event, context):
         )
 
         # Share on LinkedIn
-        logger.info("Sharing the article on LinkedIn.")
         share_on_linkedin(
             article_url=article_url,
             title=title,
@@ -335,7 +365,6 @@ def lambda_handler(event, context):
         )
 
         # Post tweet
-        logger.info("Posting the article on Twitter.")
         post_tweet(tweet_content=f"{post_content}\n{article_url}")
 
     except Exception as e:
