@@ -2,93 +2,44 @@
 
 ## Overview
 
-This AWS Lambda function automates the process of writing technology blogs, publishing them on Medium, and sharing them on LinkedIn and Twitter. It uses OpenAI's GPT-3.5 Turbo, AWS's Pricing API, Medium API, LinkedIn API, and Tweepy to manage these tasks.
+This AWS Lambda function automates the process of writing, generating, and publishing technology blogs about AWS services. It utilizes OpenAI's GPT-3, AWS's various APIs including the Pricing API, Medium API, LinkedIn API, and Tweepy to manage these tasks. The function employs a series of Python modules and methods to fetch information, generate articles, and share them across various platforms.
 
 ## Features
 
-- Fetches a list of AWS service names using AWS's Pricing API.
-- Generates an article about a random AWS service using OpenAI's GPT-3.5 Turbo.
-- Publishes the generated article to Medium with a list of specified tags.
-- Shares the Medium article link on LinkedIn.
+- Fetches a list of AWS services and details using AWS's SDK (Boto3).
+- Retrieves API tokens and other parameters from AWS Systems Manager Parameter Store.
+- Generates an article about a random AWS service using OpenAI's GPT-3.
+- Publishes the generated article to Medium with specified tags.
+- Shares the Medium article link on LinkedIn with a custom post.
 - Tweets the Medium article link on Twitter.
 
 ## Requirements
 
 - Python 3.8 or above
-- OpenAI Python package
-- AWS SDK for Python (Boto3)
-- Requests Python package
-- Tweepy Python package
+- OpenAI Python package (`openai`)
+- AWS SDK for Python (`boto3`)
+- `requests` Python package
+- `tweepy` Python package
+- HTML parser (`html.parser`)
+- Logging (`logging`)
 - AWS Lambda
 - AWS Pricing API
 - Medium API
 - LinkedIn API
 - Twitter API
 
-## Installation
+## CDK Stack
+[Article Publisher Stack](src/stacks/)
 
-1. Clone the repository.
-2. Install required Python packages:
+## Lambda
+[Article Publisher Lambda](src/assets/lambda/article_publisher/)
 
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-## Environment Variables
-
-This Lambda function uses the following environment variables:
-
-- `medium_api_token`: API token for Medium.
-- `medium_user_id`: User ID for Medium.
-- `linkedin_access_token`: Access token for LinkedIn.
-- `openai_api_token`: API token for OpenAI.
-- Twitter API keys and tokens.
-
-## Modules and Functions
-
-### `MyHTMLParser`
-
-A simple HTML parser class to extract the title from the HTML-formatted article content.
-
-### `get_services()`
-
-Fetches the list of AWS service names using AWS's Pricing API. Handles pagination.
-
-### `get_param(param_name: str)`
-
-Retrieves a parameter value from AWS SSM Parameter Store.
-
-### `generate_article(service)`
-
-Generates an article about the provided AWS service using OpenAI's GPT-3.5 Turbo.
-
-### `publish_article(title, content, medium_api_token, medium_user_id)`
-
-Publishes the generated article to Medium and adds a list of specified tags.
-
-### `share_on_linkedin(article_url, title, linkedin_access_token)`
-
-Shares the Medium article link on LinkedIn.
-
-### `post_tweet(tweet_content)`
-
-Sends a tweet with the Medium article link.
-
-### `lambda_handler(event, context)`
-
-AWS Lambda handler function that coordinates all other functions.
+## Github Actions
+[Github Actions](.github/workflows/)
 
 ## Usage
 
 This is intended to be run as an AWS Lambda function. Make sure to provide all the required environment variables before executing the function.
-
-## Contributing
-
-Feel free to fork the repository and submit pull requests.
-
-## License
-
-This project is licensed under the MIT License.
 
 ## Author
 
