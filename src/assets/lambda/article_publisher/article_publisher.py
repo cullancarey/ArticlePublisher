@@ -10,7 +10,7 @@ import tweepy
 
 # Set up logging
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 
 class MyHTMLParser(HTMLParser):
@@ -92,14 +92,18 @@ def generate_article(service):
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a world-class technology blog writer.",
+                    "content": "You are a world-class technology blog writer capable of generating content in HTML format.",
                 },
                 {
                     "role": "user",
-                    "content": f"Please write a blog post I can post on Medium about the AWS service {service}. I am asking you to do this programmatically through the API and then posting it to Medium through their API. So, I do not have the capability to edit the content you return, and I would like it to be as ready to post as possible. Please end the article with 'Subscribe for more: https://cullancarey.medium.com/subscribe. Thanks for reading, Cullan Carey.' Also, format it in HTML please.",
+                    "content": f"Please write a blog post I can post on Medium about the AWS service {service}. The blog should include the following sections: 1) Introduction, 2) Key Features, 3) Benefits of Using the Service, 4) Getting Started, and 5) Conclusion. The blog should have an educational tone and be targeted at developers and tech enthusiasts. Please include a call to action at the end of the blog encouraging readers to subscribe. Conclude the article with 'Subscribe for more: https://cullancarey.medium.com/subscribe. Thanks for reading, Cullan Carey.' The blog should be ready to post, without the need for editing, and formatted in HTML.",
                 },
             ],
             max_tokens=1000,
+            temperature=0.7,
+            top_p=1.0,
+            frequency_penalty=0,
+            presence_penalty=0.6,
         )
 
         if "choices" in response and len(response["choices"]) > 0:
