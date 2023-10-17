@@ -7,7 +7,7 @@ from html.parser import HTMLParser
 import random
 import tweepy
 
-
+logging.basicConfig(level=logging.INFO)
 # Set up logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -134,11 +134,11 @@ def generate_article(service):
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a world-class technology blog writer capable of generating content in HTML format.",
+                    "content": "You are a world-class technology blog writer capable of generating SEO-friendly content in HTML format.",
                 },
                 {
                     "role": "user",
-                    "content": f"Please write a blog post I can post on Medium about the AWS service {service}...",  # Request details here
+                    "content": f"Please write an SEO-friendly blog post I can post on Medium about the AWS service {service}. The blog should include the following sections: 1) Introduction, 2) Key Features, 3) Benefits of Using the Service, 4) Getting Started, and 5) Conclusion. The blog should have an educational tone and be targeted at developers and tech enthusiasts. Include meta descriptions, header tags, and relevant keywords for SEO optimization. Please include a call to action at the end of the blog encouraging readers to subscribe. Conclude the article with 'Subscribe for more: https://cullancarey.medium.com/subscribe. Thanks for reading, Cullan Carey.' The blog should be ready to post, without the need for editing, and formatted in HTML.",  # Request details here
                 },
             ],
             max_tokens=1000,  # Limiting the response to 1000 tokens
