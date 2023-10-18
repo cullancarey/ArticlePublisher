@@ -4,7 +4,7 @@ run-name: Running ${{github.workflow}} off of ${{ github.ref_name }}
 on:
   push:
     branches:
-      - main
+      - develop
 
 permissions:
   id-token: write # This is required for requesting the JWT
