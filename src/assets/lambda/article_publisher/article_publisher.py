@@ -474,6 +474,3 @@ def lambda_handler(event, context):
         "statusCode": 200,
         "body": "Successfully published article and shared on social media.",
     }
-
-
-lambda_handler(event=None, context=None)
