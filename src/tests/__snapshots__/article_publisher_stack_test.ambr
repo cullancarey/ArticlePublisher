@@ -1,0 +1,500 @@
+# serializer version: 1
+# name: test_article_publisher_stack
+  dict({
+    'Parameters': dict({
+      'BootstrapVersion': dict({
+        'Default': '/cdk-bootstrap/hnb659fds/version',
+        'Description': 'Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]',
+        'Type': 'AWS::SSM::Parameter::Value<String>',
+      }),
+    }),
+    'Resources': dict({
+      'ArticlePublisherLambdaC6CEFD02': dict({
+        'DependsOn': list([
+          'ArticlePublisherLambdaServiceRoleDefaultPolicy370E1B9F',
+          'ArticlePublisherLambdaServiceRoleAD42F84E',
+        ]),
+        'Properties': dict({
+          'Architectures': list([
+            'x86_64',
+          ]),
+          'Code': dict({
+            'ImageUri': dict({
+              'Fn::Sub': '${AWS::AccountId}.dkr.ecr.${AWS::Region}.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-${AWS::AccountId}-${AWS::Region}:6470e5baebc5c5f2bdb3c3598a7146e495d75de4aab2d9e57a8888fdedcdafac',
+            }),
+          }),
+          'PackageType': 'Image',
+          'Role': dict({
+            'Fn::GetAtt': list([
+              'ArticlePublisherLambdaServiceRoleAD42F84E',
+              'Arn',
+            ]),
+          }),
+          'Timeout': 300,
+        }),
+        'Type': 'AWS::Lambda::Function',
+      }),
+      'ArticlePublisherLambdaLogRetention95816BF4': dict({
+        'Properties': dict({
+          'LogGroupName': dict({
+            'Fn::Join': list([
+              '',
+              list([
+                '/aws/lambda/',
+                dict({
+                  'Ref': 'ArticlePublisherLambdaC6CEFD02',
+                }),
+              ]),
+            ]),
+          }),
+          'RetentionInDays': 365,
+          'ServiceToken': dict({
+            'Fn::GetAtt': list([
+              'LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aFD4BFC8A',
+              'Arn',
+            ]),
+          }),
+        }),
+        'Type': 'Custom::LogRetention',
+      }),
+      'ArticlePublisherLambdaRuleAllowEventRuleTestArticlePublisherStackArticlePublisherLambda554020B7161270C4': dict({
+        'Properties': dict({
+          'Action': 'lambda:InvokeFunction',
+          'FunctionName': dict({
+            'Fn::GetAtt': list([
+              'ArticlePublisherLambdaC6CEFD02',
+              'Arn',
+            ]),
+          }),
+          'Principal': 'events.amazonaws.com',
+          'SourceArn': dict({
+            'Fn::GetAtt': list([
+              'ArticlePublisherLambdaRuleB5271BDC',
+              'Arn',
+            ]),
+          }),
+        }),
+        'Type': 'AWS::Lambda::Permission',
+      }),
+      'ArticlePublisherLambdaRuleB5271BDC': dict({
+        'Properties': dict({
+          'Description': dict({
+            'Fn::Join': list([
+              '',
+              list([
+                'Rule to trigger ',
+                dict({
+                  'Ref': 'ArticlePublisherLambdaC6CEFD02',
+                }),
+              ]),
+            ]),
+          }),
+          'ScheduleExpression': 'cron(0 13 ? * * *)',
+          'State': 'ENABLED',
+          'Targets': list([
+            dict({
+              'Arn': dict({
+                'Fn::GetAtt': list([
+                  'ArticlePublisherLambdaC6CEFD02',
+                  'Arn',
+                ]),
+              }),
+              'Id': 'Target0',
+            }),
+          ]),
+        }),
+        'Type': 'AWS::Events::Rule',
+      }),
+      'ArticlePublisherLambdaServiceRoleAD42F84E': dict({
+        'Properties': dict({
+          'AssumeRolePolicyDocument': dict({
+            'Statement': list([
+              dict({
+                'Action': 'sts:AssumeRole',
+                'Effect': 'Allow',
+                'Principal': dict({
+                  'Service': 'lambda.amazonaws.com',
+                }),
+              }),
+            ]),
+            'Version': '2012-10-17',
+          }),
+          'ManagedPolicyArns': list([
+            dict({
+              'Fn::Join': list([
+                '',
+                list([
+                  'arn:',
+                  dict({
+                    'Ref': 'AWS::Partition',
+                  }),
+                  ':iam::aws:policy/service-role/AWSLambdaBasicExecutionRole',
+                ]),
+              ]),
+            }),
+          ]),
+        }),
+        'Type': 'AWS::IAM::Role',
+      }),
+      'ArticlePublisherLambdaServiceRoleDefaultPolicy370E1B9F': dict({
+        'Properties': dict({
+          'PolicyDocument': dict({
+            'Statement': list([
+              dict({
+                'Action': 'pricing:DescribeServices',
+                'Effect': 'Allow',
+                'Resource': '*',
+              }),
+              dict({
+                'Action': list([
+                  'ssm:DescribeParameters',
+                  'ssm:GetParameters',
+                  'ssm:GetParameter',
+                  'ssm:GetParameterHistory',
+                ]),
+                'Effect': 'Allow',
+                'Resource': dict({
+                  'Fn::Join': list([
+                    '',
+                    list([
+                      'arn:',
+                      dict({
+                        'Ref': 'AWS::Partition',
+                      }),
+                      ':ssm:',
+                      dict({
+                        'Ref': 'AWS::Region',
+                      }),
+                      ':',
+                      dict({
+                        'Ref': 'AWS::AccountId',
+                      }),
+                      ':parameter/medium_api_token',
+                    ]),
+                  ]),
+                }),
+              }),
+              dict({
+                'Action': list([
+                  'ssm:DescribeParameters',
+                  'ssm:GetParameters',
+                  'ssm:GetParameter',
+                  'ssm:GetParameterHistory',
+                ]),
+                'Effect': 'Allow',
+                'Resource': dict({
+                  'Fn::Join': list([
+                    '',
+                    list([
+                      'arn:',
+                      dict({
+                        'Ref': 'AWS::Partition',
+                      }),
+                      ':ssm:',
+                      dict({
+                        'Ref': 'AWS::Region',
+                      }),
+                      ':',
+                      dict({
+                        'Ref': 'AWS::AccountId',
+                      }),
+                      ':parameter/medium_user_id',
+                    ]),
+                  ]),
+                }),
+              }),
+              dict({
+                'Action': list([
+                  'ssm:DescribeParameters',
+                  'ssm:GetParameters',
+                  'ssm:GetParameter',
+                  'ssm:GetParameterHistory',
+                ]),
+                'Effect': 'Allow',
+                'Resource': dict({
+                  'Fn::Join': list([
+                    '',
+                    list([
+                      'arn:',
+                      dict({
+                        'Ref': 'AWS::Partition',
+                      }),
+                      ':ssm:',
+                      dict({
+                        'Ref': 'AWS::Region',
+                      }),
+                      ':',
+                      dict({
+                        'Ref': 'AWS::AccountId',
+                      }),
+                      ':parameter/openai_api_token',
+                    ]),
+                  ]),
+                }),
+              }),
+              dict({
+                'Action': list([
+                  'ssm:DescribeParameters',
+                  'ssm:GetParameters',
+                  'ssm:GetParameter',
+                  'ssm:GetParameterHistory',
+                ]),
+                'Effect': 'Allow',
+                'Resource': dict({
+                  'Fn::Join': list([
+                    '',
+                    list([
+                      'arn:',
+                      dict({
+                        'Ref': 'AWS::Partition',
+                      }),
+                      ':ssm:',
+                      dict({
+                        'Ref': 'AWS::Region',
+                      }),
+                      ':',
+                      dict({
+                        'Ref': 'AWS::AccountId',
+                      }),
+                      ':parameter/linkedin_access_token',
+                    ]),
+                  ]),
+                }),
+              }),
+              dict({
+                'Action': list([
+                  'ssm:DescribeParameters',
+                  'ssm:GetParameters',
+                  'ssm:GetParameter',
+                  'ssm:GetParameterHistory',
+                ]),
+                'Effect': 'Allow',
+                'Resource': dict({
+                  'Fn::Join': list([
+                    '',
+                    list([
+                      'arn:',
+                      dict({
+                        'Ref': 'AWS::Partition',
+                      }),
+                      ':ssm:',
+                      dict({
+                        'Ref': 'AWS::Region',
+                      }),
+                      ':',
+                      dict({
+                        'Ref': 'AWS::AccountId',
+                      }),
+                      ':parameter/cullan_twitter_api_key',
+                    ]),
+                  ]),
+                }),
+              }),
+              dict({
+                'Action': list([
+                  'ssm:DescribeParameters',
+                  'ssm:GetParameters',
+                  'ssm:GetParameter',
+                  'ssm:GetParameterHistory',
+                ]),
+                'Effect': 'Allow',
+                'Resource': dict({
+                  'Fn::Join': list([
+                    '',
+                    list([
+                      'arn:',
+                      dict({
+                        'Ref': 'AWS::Partition',
+                      }),
+                      ':ssm:',
+                      dict({
+                        'Ref': 'AWS::Region',
+                      }),
+                      ':',
+                      dict({
+                        'Ref': 'AWS::AccountId',
+                      }),
+                      ':parameter/cullan_twitter_access_token',
+                    ]),
+                  ]),
+                }),
+              }),
+              dict({
+                'Action': list([
+                  'ssm:DescribeParameters',
+                  'ssm:GetParameters',
+                  'ssm:GetParameter',
+                  'ssm:GetParameterHistory',
+                ]),
+                'Effect': 'Allow',
+                'Resource': dict({
+                  'Fn::Join': list([
+                    '',
+                    list([
+                      'arn:',
+                      dict({
+                        'Ref': 'AWS::Partition',
+                      }),
+                      ':ssm:',
+                      dict({
+                        'Ref': 'AWS::Region',
+                      }),
+                      ':',
+                      dict({
+                        'Ref': 'AWS::AccountId',
+                      }),
+                      ':parameter/cullan_twitter_access_secret_token',
+                    ]),
+                  ]),
+                }),
+              }),
+              dict({
+                'Action': list([
+                  'ssm:DescribeParameters',
+                  'ssm:GetParameters',
+                  'ssm:GetParameter',
+                  'ssm:GetParameterHistory',
+                ]),
+                'Effect': 'Allow',
+                'Resource': dict({
+                  'Fn::Join': list([
+                    '',
+                    list([
+                      'arn:',
+                      dict({
+                        'Ref': 'AWS::Partition',
+                      }),
+                      ':ssm:',
+                      dict({
+                        'Ref': 'AWS::Region',
+                      }),
+                      ':',
+                      dict({
+                        'Ref': 'AWS::AccountId',
+                      }),
+                      ':parameter/cullan_twitter_secret_key',
+                    ]),
+                  ]),
+                }),
+              }),
+            ]),
+            'Version': '2012-10-17',
+          }),
+          'PolicyName': 'ArticlePublisherLambdaServiceRoleDefaultPolicy370E1B9F',
+          'Roles': list([
+            dict({
+              'Ref': 'ArticlePublisherLambdaServiceRoleAD42F84E',
+            }),
+          ]),
+        }),
+        'Type': 'AWS::IAM::Policy',
+      }),
+      'LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aFD4BFC8A': dict({
+        'DependsOn': list([
+          'LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRoleDefaultPolicyADDA7DEB',
+          'LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB',
+        ]),
+        'Properties': dict({
+          'Code': dict({
+            'S3Bucket': dict({
+              'Fn::Sub': 'cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}',
+            }),
+            'S3Key': '5bc602ecde93c947efe5899ae355f999986a1acbe610b1c0b9c468d738857555.zip',
+          }),
+          'Handler': 'index.handler',
+          'Role': dict({
+            'Fn::GetAtt': list([
+              'LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB',
+              'Arn',
+            ]),
+          }),
+          'Runtime': 'nodejs18.x',
+          'Timeout': 900,
+        }),
+        'Type': 'AWS::Lambda::Function',
+      }),
+      'LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB': dict({
+        'Properties': dict({
+          'AssumeRolePolicyDocument': dict({
+            'Statement': list([
+              dict({
+                'Action': 'sts:AssumeRole',
+                'Effect': 'Allow',
+                'Principal': dict({
+                  'Service': 'lambda.amazonaws.com',
+                }),
+              }),
+            ]),
+            'Version': '2012-10-17',
+          }),
+          'ManagedPolicyArns': list([
+            dict({
+              'Fn::Join': list([
+                '',
+                list([
+                  'arn:',
+                  dict({
+                    'Ref': 'AWS::Partition',
+                  }),
+                  ':iam::aws:policy/service-role/AWSLambdaBasicExecutionRole',
+                ]),
+              ]),
+            }),
+          ]),
+        }),
+        'Type': 'AWS::IAM::Role',
+      }),
+      'LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRoleDefaultPolicyADDA7DEB': dict({
+        'Properties': dict({
+          'PolicyDocument': dict({
+            'Statement': list([
+              dict({
+                'Action': list([
+                  'logs:PutRetentionPolicy',
+                  'logs:DeleteRetentionPolicy',
+                ]),
+                'Effect': 'Allow',
+                'Resource': '*',
+              }),
+            ]),
+            'Version': '2012-10-17',
+          }),
+          'PolicyName': 'LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRoleDefaultPolicyADDA7DEB',
+          'Roles': list([
+            dict({
+              'Ref': 'LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB',
+            }),
+          ]),
+        }),
+        'Type': 'AWS::IAM::Policy',
+      }),
+    }),
+    'Rules': dict({
+      'CheckBootstrapVersion': dict({
+        'Assertions': list([
+          dict({
+            'Assert': dict({
+              'Fn::Not': list([
+                dict({
+                  'Fn::Contains': list([
+                    list([
+                      '1',
+                      '2',
+                      '3',
+                      '4',
+                      '5',
+                    ]),
+                    dict({
+                      'Ref': 'BootstrapVersion',
+                    }),
+                  ]),
+                }),
+              ]),
+            }),
+            'AssertDescription': "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI.",
+          }),
+        ]),
+      }),
+    }),
+  })
+# ---
