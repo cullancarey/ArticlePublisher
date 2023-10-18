@@ -1,7 +1,9 @@
 import json
+import os
 import openai
 import logging
 import boto3
+import boto3.session
 import requests
 from html.parser import HTMLParser
 import random
@@ -11,6 +13,13 @@ logging.basicConfig(level=logging.INFO)
 # Set up logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+# Create a Boto3 session to interact with AWS services
+logger.debug("Creating Boto3 session.")
+session = boto3.session.Session(region_name="us-east-2")
+
+# Set SNS topic variable from environment
+SNS_TOPIC = os.environ.get("SNS_TOPIC_ARN", None)
 
 
 # Define a custom HTML parser class that inherits from the built-in HTMLParser
@@ -45,47 +54,40 @@ class MyHTMLParser(HTMLParser):
             self.title = data
 
 
-def get_services():
+def publish_sns(message: str):
     try:
-        # Create a Boto3 session to interact with AWS services
-        logger.debug("Creating Boto3 session.")
-        session = boto3.Session()
+        sns_client = session.client("sns")
 
-        # Create a client to interact specifically with the AWS Pricing API
-        logger.debug("Creating AWS Pricing client.")
-        pricing_client = session.client("pricing", region_name="us-east-1")
-
-        # Fetch the first page of services available via the AWS Pricing API
-        logger.info("Fetching AWS services.")
-        response = pricing_client.describe_services()
-
-        # Check if the 'Services' key is present in the API response
-        if "Services" not in response:
-            logger.error("No services found in the response.")
+        if SNS_TOPIC is not None:
+            sns_client.publish(
+                TopicArn=SNS_TOPIC,
+                Message=message,
+                Subject="ArticlePublisher Notification",
+            )
+            logger.info(f"Successfully published sns message: {message}.")
+        else:
+            logger.error("SNS topic not found in environment.")
             return None
 
-        # Extract service codes (names) from the response
-        services = [service["ServiceCode"] for service in response["Services"]]
+    except Exception as e:
+        logger.error(
+            f"An error occurred while publishing message to sns: {message}. Error: {e}"
+        )
+        return None
 
-        # Handle API pagination to fetch additional services, if any
-        while "NextToken" in response:
-            logger.debug("Fetching additional service results.")
-            # Fetch the next page of services using the 'NextToken' from the previous response
-            response = pricing_client.describe_services(NextToken=response["NextToken"])
 
-            # Extend the list of services with those found in the additional pages
-            services.extend(
-                [service["ServiceCode"] for service in response["Services"]]
-            )
+def get_services():
+    try:
+        # Get a list of available services in the specified region
+        logger.info("Fetching AWS services.")
+        services = session.get_available_services()
 
         # Log the total number of services found
         logger.debug(f"Found {len(services)} services.")
 
         return services
-
     except Exception as e:
-        # Log any exceptions that occur during the process
-        logger.error(f"An error occurred retrieving services from AWS: {e}")
+        logger.error(f"An error occurred while fetching AWS services: {e}")
         return None
 
 
@@ -462,11 +464,16 @@ def lambda_handler(event, context):
     # Handle unexpected exceptions
     except Exception as e:
         logger.error(f"An error occurred: {e}")
+        publish_sns(message=f"Error occurred in ArticlePublisher: {e}")
         return {"statusCode": 500, "body": f"Internal Server Error: {e}"}
 
     # Log the successful completion of the Lambda function
     logger.info("Lambda function completed successfully.")
+    publish_sns(message=f"Successfully published article: {article_url}")
     return {
         "statusCode": 200,
         "body": "Successfully published article and shared on social media.",
     }
+
+
+lambda_handler(event=None, context=None)

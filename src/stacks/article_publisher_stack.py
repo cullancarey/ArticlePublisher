@@ -7,6 +7,7 @@ from aws_cdk import (
     aws_events as events,
     aws_events_targets as event_targets,
     aws_iam as iam,
+    aws_sns as sns,
 )
 from constructs import Construct
 
@@ -20,6 +21,18 @@ class ArticlePublisherStack(Stack):
     ) -> None:
         super().__init__(scope, id, **kwargs)
 
+        # SNS topic to alert on lambda failures
+        article_publisher_topic = sns.Topic(self, "ArticlePublisherTopic")
+
+        # Create a subscription for the sns topic
+        sns.Subscription(
+            self,
+            "ArticlePublisherTopicSubscription",
+            topic=article_publisher_topic,
+            endpoint="cullancarey@yahoo.com",
+            protocol=sns.SubscriptionProtocol.EMAIL,
+        )
+
         # Lambda Function (Assuming that this is previously created)
         article_publisher_lambda = _lambda.DockerImageFunction(
             self,
@@ -30,6 +43,11 @@ class ArticlePublisherStack(Stack):
             timeout=Duration.seconds(300),
             architecture=_lambda.Architecture.X86_64,
             log_retention=logs.RetentionDays.ONE_YEAR,
+        )
+
+        # Add sns topic arn as lambda environment variable
+        article_publisher_lambda.add_environment(
+            "SNS_TOPIC_ARN", article_publisher_topic.topic_arn
         )
 
         # Define a policy statement
