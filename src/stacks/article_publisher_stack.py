@@ -52,8 +52,9 @@ class ArticlePublisherStack(Stack):
 
         # Define a policy statement
         statement = iam.PolicyStatement(
-            actions=["pricing:DescribeServices"],
-            resources=["*"],  # Adjust the resources as needed
+            sid="AllowSNS",
+            actions=["sns:Publish"],
+            resources=[article_publisher_topic.topic_arn],
             effect=iam.Effect.ALLOW,
         )
 
