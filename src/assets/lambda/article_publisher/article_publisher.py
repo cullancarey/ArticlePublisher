@@ -495,7 +495,7 @@ def lambda_handler(event, context):
 
         # Prepare the LinkedIn post content
         post_content = generate_linkedin_post_content(service=service)
-        logger.info(post_content)
+        logger.debug(post_content)
 
         # Share the article on LinkedIn
         share_on_linkedin(
