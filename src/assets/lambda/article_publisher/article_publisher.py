@@ -143,7 +143,7 @@ def generate_article(service):
                     "content": f"Please write an SEO-friendly blog post I can post on Medium about the AWS service {service}. The blog should include the following sections: 1) Introduction, 2) Key Features, 3) Benefits of Using the Service, 4) Getting Started, and 5) Conclusion. The blog should have an educational tone and be targeted at developers and tech enthusiasts. Include meta descriptions, header tags, and relevant keywords for SEO optimization. Please include a call to action at the end of the blog encouraging readers to subscribe. Conclude the article with 'Subscribe for more: https://cullancarey.medium.com/subscribe. Thanks for reading, Cullan Carey.' The blog should be ready to post, without the need for editing, and formatted in HTML.",  # Request details here
                 },
             ],
-            max_tokens=1000,  # Limiting the response to 1000 tokens
+            max_tokens=2000,  # Limiting the response to 1000 tokens
             temperature=0.7,  # Controlling randomness
             top_p=1.0,  # Controlling diversity of the output
             frequency_penalty=0,  # No frequency penalty
@@ -172,6 +172,53 @@ def generate_article(service):
         # Log any unknown errors
         logger.error(
             f"An unknown error occurred while generating the article: {str(e)}"
+        )
+        return None
+
+
+def generate_linkedin_post_content(service):
+    try:
+        logger.info("Generating LinkedIn post content.")
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a social media expert, skilled at creating engaging, fun, and emoji-filled LinkedIn posts.",
+                },
+                {
+                    "role": "user",
+                    "content": f"Create a LinkedIn post to promote my new blog article about AWS service '{service}'. No need to link the article because it will be linked through the linkedin post api. The blog post includes the following sections: 1) Introduction, 2) Key Features, 3) Benefits of Using the Service, 4) Getting Started, and 5) Conclusion. Generate a LinkedIn post that encourages people to read the blog post and subscribe to my Medium account. Make sure the post is engaging and includes relevant hashtags.",
+                },
+            ],
+            max_tokens=200,
+            temperature=0.7,
+            top_p=1.0,
+            frequency_penalty=0,
+            presence_penalty=0.6,
+        )
+        # Checking if the 'choices' key exists in the API response and is non-empty
+        if "choices" in response and len(response["choices"]) > 0:
+            # Extract the generated article from the API response
+            linkedin_post_content = response["choices"][0]["message"]["content"]
+
+            # Log the successful article generation
+            logger.debug("Successfully generated linkedin post content.")
+            logger.debug(
+                linkedin_post_content
+            )  # Or use logger.info based on how much detail you want in the logs
+
+            return linkedin_post_content
+        else:
+            # Log a warning if the API response is unexpected
+            logger.warning(
+                f"Received unexpected response from OpenAI API. No 'choices' in the response. Api response: {response}"
+            )
+            return None
+    except Exception as e:
+        # Log any unknown errors
+        logger.error(
+            f"An unknown error occurred while generating the linkedin post content: {str(e)}"
         )
         return None
 
@@ -384,7 +431,7 @@ def post_tweet(tweet_content):
 def lambda_handler(event, context):
     try:
         # Log that the Lambda function has started
-        logger.info("Lambda function initiated.")
+        logger.info(f"Lambda function initiated.")
 
         # Retrieve API tokens and other parameters
         logger.info("Retrieving API tokens and parameters.")
@@ -402,6 +449,7 @@ def lambda_handler(event, context):
 
         # Retrieve the list of AWS services
         service_list = get_services()
+        service = random.choice(service_list)
 
         # Check if service list retrieval was successful
         if service_list is None:
@@ -412,7 +460,7 @@ def lambda_handler(event, context):
             }
 
         # Generate an article about a randomly chosen service
-        article_content = generate_article(service=random.choice(service_list))
+        article_content = generate_article(service=service)
 
         # Check if article generation was successful
         if article_content is None:
@@ -443,12 +491,11 @@ def lambda_handler(event, context):
                 "body": "Internal Server Error: Failed to publish article on Medium.",
             }
 
+        # article_url = "https://medium.com/@cullancarey/introducing-aws-apprunner-a-powerful-managed-service-for-application-deployment-be56f8263545"
+
         # Prepare the LinkedIn post content
-        post_content = (
-            "Check out my latest blog on Medium written by ChatGPT! "
-            "#AWS #CloudComputing #OpenAI #GPT3 #Medium #ArtificialIntelligence "
-            "#LinkedIn #Python #Boto3 #Automation #Programming #DevOps #Serverless #NLP #MachineLearning"
-        )
+        post_content = generate_linkedin_post_content(service=service)
+        logger.info(post_content)
 
         # Share the article on LinkedIn
         share_on_linkedin(
@@ -474,3 +521,6 @@ def lambda_handler(event, context):
         "statusCode": 200,
         "body": "Successfully published article and shared on social media.",
     }
+
+
+# lambda_handler(event=None, context=None)
