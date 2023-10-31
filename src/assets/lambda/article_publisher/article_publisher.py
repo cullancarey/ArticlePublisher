@@ -191,7 +191,7 @@ def generate_linkedin_post_content(service):
                     "content": f"Create a LinkedIn post to promote my new blog article about AWS service '{service}'. No need to link the article because it will be linked through the linkedin post api. The blog post includes the following sections: 1) Introduction, 2) Key Features, 3) Benefits of Using the Service, 4) Getting Started, and 5) Conclusion. Generate a LinkedIn post that encourages people to read the blog post and subscribe to my Medium account. Make sure the post is engaging and includes relevant hashtags.",
                 },
             ],
-            max_tokens=200,
+            max_tokens=500,
             temperature=0.7,
             top_p=1.0,
             frequency_penalty=0,
