@@ -191,7 +191,7 @@ def generate_linkedin_post_content(service):
                     "content": f"Create a LinkedIn post to promote my new blog article about AWS service '{service}'. No need to link the article because it will be linked through the linkedin post api. The blog post includes the following sections: 1) Introduction, 2) Key Features, 3) Benefits of Using the Service, 4) Getting Started, and 5) Conclusion. Generate a LinkedIn post that encourages people to read the blog post and subscribe to my Medium account. Make sure the post is engaging and includes relevant hashtags.",
                 },
             ],
-            max_tokens=200,
+            max_tokens=500,
             temperature=0.7,
             top_p=1.0,
             frequency_penalty=0,
@@ -495,7 +495,7 @@ def lambda_handler(event, context):
 
         # Prepare the LinkedIn post content
         post_content = generate_linkedin_post_content(service=service)
-        logger.info(post_content)
+        logger.debug(post_content)
 
         # Share the article on LinkedIn
         share_on_linkedin(
@@ -506,7 +506,8 @@ def lambda_handler(event, context):
         )
 
         # Post a tweet with the article link
-        post_tweet(tweet_content=f"{post_content}\n{article_url}")
+        tweet_content = f"Check out my latest blog on Medium about '{service}', all written by ChatGPT! #AWS #CloudComputing #OpenAI #GPT3 #Medium #ArtificialIntelligence #LinkedIn #Python #Boto3 #Automation #Programming #DevOps #Serverless #NLP #MachineLearning"
+        post_tweet(tweet_content=f"{tweet_content}\n{article_url}")
 
     # Handle unexpected exceptions
     except Exception as e:
