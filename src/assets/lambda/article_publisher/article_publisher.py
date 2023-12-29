@@ -129,7 +129,7 @@ def generate_article(service):
     try:
         # Log the initiation of the article generation process
         logger.info(f"Attempting to generate article for AWS service: {service}")
-        client = OpenAI()
+        client = OpenAI(api_key=get_param(param_name="openai_api_token"))
 
         # API call to OpenAI for article generation
         response = client.chat.completions.create(
@@ -180,7 +180,7 @@ def generate_article(service):
 def generate_linkedin_post_content(service):
     try:
         logger.info("Generating LinkedIn post content.")
-        client = OpenAI()
+        client = OpenAI(api_key=get_param(param_name="openai_api_token"))
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -431,12 +431,9 @@ def lambda_handler(event, context):
         MEDIUM_API_TOKEN = get_param(param_name="medium_api_token")
         MEDIUM_USER_ID = get_param(param_name="medium_user_id")
         LINKEDIN_ACCESS_TOKEN = get_param(param_name="linkedin_access_token")
-        openai.api_key = get_param(param_name="openai_api_token")
 
         # Check for missing required parameters
-        if not all(
-            [MEDIUM_API_TOKEN, MEDIUM_USER_ID, LINKEDIN_ACCESS_TOKEN, openai.api_key]
-        ):
+        if not all([MEDIUM_API_TOKEN, MEDIUM_USER_ID, LINKEDIN_ACCESS_TOKEN]):
             logger.error("One or more required parameters are missing.")
             publish_sns(
                 message=f"Error occurred in ArticlePublisher: One or more required parameters are missing."
