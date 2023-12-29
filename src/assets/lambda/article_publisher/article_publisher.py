@@ -274,18 +274,12 @@ def publish_article(title, content, medium_api_token, medium_user_id):
             article_url = response.json().get("data", {}).get("url", None)
             logger.debug(f"Article URL: {article_url}")
             return article_url
-        elif response.status_code == 400:
-            logger.warning(f"Bad request: {response.content}")
-            return None
-        elif response.status_code == 401:
-            logger.warning(f"Unauthorized: {response.content}")
-            return None
-        elif response.status_code == 403:
-            logger.warning(f"Forbidden: {response.content}")
-            return None
-        else:
+        elif response.status_code != 201:
             logger.error(
                 f"Failed to publish article, received status code {response.status_code}: {response.content}"
+            )
+            publish_sns(
+                message=f"Failed to publish article, received status code {response.status_code}: {response.content}"
             )
             return None
 
@@ -344,15 +338,12 @@ def share_on_linkedin(article_url, title, linkedin_access_token, post_content):
         # Check response status code to determine the outcome
         if response.status_code == 201:
             logger.info("Successfully shared the article link on LinkedIn.")
-        elif response.status_code == 400:
-            logger.warning(f"Bad request: {response.content}")
-        elif response.status_code == 401:
-            logger.warning(f"Unauthorized: {response.content}")
-        elif response.status_code == 403:
-            logger.warning(f"Forbidden: {response.content}")
-        else:
+        elif response.status_code != 201:
             logger.error(
                 f"Failed to share article link on LinkedIn, received status code {response.status_code}: {response.content}"
+            )
+            publish_sns(
+                message=f"Failed to share article link on LinkedIn, received status code {response.status_code}: {response.content}"
             )
             return {
                 "statusCode": 500,
@@ -445,6 +436,9 @@ def lambda_handler(event, context):
             [MEDIUM_API_TOKEN, MEDIUM_USER_ID, LINKEDIN_ACCESS_TOKEN, openai.api_key]
         ):
             logger.error("One or more required parameters are missing.")
+            publish_sns(
+                message=f"Error occurred in ArticlePublisher: One or more required parameters are missing."
+            )
             return {"statusCode": 400, "body": "Bad Request: Missing parameters."}
 
         # Retrieve the list of AWS services
@@ -454,6 +448,9 @@ def lambda_handler(event, context):
         # Check if service list retrieval was successful
         if service_list is None:
             logger.error("Error retrieving services from AWS.")
+            publish_sns(
+                message=f"Error occurred in ArticlePublisher: Error retrieving services from AWS."
+            )
             return {
                 "statusCode": 500,
                 "body": "Internal Server Error: Error retrieving services from AWS.",
@@ -464,7 +461,10 @@ def lambda_handler(event, context):
 
         # Check if article generation was successful
         if article_content is None:
-            logger.error("No blog generated. Exiting...")
+            logger.error("Failed to generate article from open ai.")
+            publish_sns(
+                message=f"Error occurred in ArticlePublisher: Failed to generate article from open ai."
+            )
             return {
                 "statusCode": 500,
                 "body": "Internal Server Error: Failed to generate article from open ai.",
@@ -486,6 +486,9 @@ def lambda_handler(event, context):
         # Check if article publishing was successful
         if article_url is None:
             logger.error("Failed to publish article on Medium.")
+            publish_sns(
+                message=f"Error occurred in ArticlePublisher: Failed to publish article on Medium."
+            )
             return {
                 "statusCode": 500,
                 "body": "Internal Server Error: Failed to publish article on Medium.",
@@ -495,6 +498,17 @@ def lambda_handler(event, context):
 
         # Prepare the LinkedIn post content
         post_content = generate_linkedin_post_content(service=service)
+
+        # Check if LinkedIn post content generation was successful
+        if post_content is None:
+            logger.error("Failed to generate LinkedIn post content from open ai.")
+            publish_sns(
+                message=f"Error occurred in ArticlePublisher: Failed to generate LinkedIn post content from open ai."
+            )
+            return {
+                "statusCode": 500,
+                "body": "Internal Server Error: Failed to generate LinkedIn post content from open ai.",
+            }
         logger.debug(post_content)
 
         # Share the article on LinkedIn
