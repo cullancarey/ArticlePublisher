@@ -1,6 +1,6 @@
 import json
 import os
-import openai
+from openai import OpenAI
 import logging
 import boto3
 import boto3.session
@@ -129,9 +129,10 @@ def generate_article(service):
     try:
         # Log the initiation of the article generation process
         logger.info(f"Attempting to generate article for AWS service: {service}")
+        client = OpenAI()
 
         # API call to OpenAI for article generation
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",  # Using the GPT-3.5 model
             messages=[
                 {
@@ -179,7 +180,8 @@ def generate_article(service):
 def generate_linkedin_post_content(service):
     try:
         logger.info("Generating LinkedIn post content.")
-        response = openai.ChatCompletion.create(
+        client = OpenAI()
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {
