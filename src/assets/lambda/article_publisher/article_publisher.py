@@ -152,9 +152,9 @@ def generate_article(service):
         )
 
         # Checking if the 'choices' key exists in the API response and is non-empty
-        if "choices" in response and len(response["choices"]) > 0:
+        if response.choices[0].message:
             # Extract the generated article from the API response
-            blog_content = response["choices"][0]["message"]["content"]
+            blog_content = response.choices[0].message.content
 
             # Log the successful article generation
             logger.debug("Successfully generated article content.")
