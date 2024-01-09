@@ -200,9 +200,9 @@ def generate_linkedin_post_content(service):
             presence_penalty=0.6,
         )
         # Checking if the 'choices' key exists in the API response and is non-empty
-        if "choices" in response and len(response["choices"]) > 0:
+        if response.choices[0].message:
             # Extract the generated article from the API response
-            linkedin_post_content = response["choices"][0]["message"]["content"]
+            linkedin_post_content = response.choices[0].message.content
 
             # Log the successful article generation
             logger.debug("Successfully generated linkedin post content.")
