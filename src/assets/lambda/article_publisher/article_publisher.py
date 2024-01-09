@@ -237,16 +237,9 @@ def publish_article(title, content, medium_api_token, medium_user_id):
     tags = [
         "AWS",
         "Cloud Computing",
-        "GPT-3",
-        "Artificial Intelligence",
-        "Automation",
         "Python",
-        "Boto3",
-        "Programming",
         "DevOps",
-        "Serverless",
-        "NLP",
-        "Machine Learning",
+        "Infrastructure As Code",
     ]
 
     # Prepare the payload with article details
