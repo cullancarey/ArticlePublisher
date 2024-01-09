@@ -87,5 +87,5 @@ class ArticlePublisherStack(Stack):
                 week_day="2,4,5", hour="14", minute="0", month="*", year="*"
             ),
             targets=[event_targets.LambdaFunction(article_publisher_lambda)],
-            enabled=False,
+            enabled=True,
         ),
