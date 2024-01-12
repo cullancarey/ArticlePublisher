@@ -88,6 +88,7 @@ def get_services():
         return services
     except Exception as e:
         logger.error(f"An error occurred while fetching AWS services: {e}")
+        publish_sns(message=f"An error occurred while fetching AWS services: {e}")
         return None
 
 
@@ -116,9 +117,13 @@ def get_param(param_name: str):
     except Exception as e:
         # Log any errors that occur while trying to retrieve the parameter
         logger.error(f"Error retrieving parameter: {param_name} with error: {e}")
+        publish_sns(message=f"Error retrieving parameter: {param_name} with error: {e}")
 
         # Return None to indicate that the parameter could not be retrieved
-        return None
+        return {
+            "statusCode": 400,
+            "body": f"Error retrieving parameter: {param_name} with error: {e}",
+        }
 
     # Extract the parameter value from the API response and return it
     return response["Parameter"]["Value"]
@@ -165,14 +170,18 @@ def generate_article(service):
             return blog_content
         else:
             # Log a warning if the API response is unexpected
-            logger.warning(
+            logger.error(
                 f"Received unexpected response from OpenAI API. No 'choices' in the response. Api response: {response}"
+            )
+            publish_sns(
+                message=f"Received unexpected response from OpenAI API. No 'choices' in the response. Api response: {response}"
             )
             return None
     except Exception as e:
         # Log any unknown errors
-        logger.error(
-            f"An unknown error occurred while generating the article: {str(e)}"
+        logger.error(f"An unknown error occurred while generating the article: {e}")
+        publish_sns(
+            message=f"An unknown error occurred while generating the article: {e}"
         )
         return None
 
@@ -212,15 +221,21 @@ def generate_linkedin_post_content(service):
 
             return linkedin_post_content
         else:
-            # Log a warning if the API response is unexpected
-            logger.warning(
+            # Log an error if the API response is unexpected
+            logger.error(
                 f"Received unexpected response from OpenAI API. No 'choices' in the response. Api response: {response}"
+            )
+            publish_sns(
+                message=f"Error occurred in ArticlePublisher: Failed to generate LinkedIn post content from open ai. Api response: {response}"
             )
             return None
     except Exception as e:
         # Log any unknown errors
         logger.error(
-            f"An unknown error occurred while generating the linkedin post content: {str(e)}"
+            f"An unknown error occurred while generating the linkedin post content: {e}"
+        )
+        publish_sns(
+            message=f"Error occurred in ArticlePublisher: An unknown error occurred while generating the linkedin post content: {e}"
         )
         return None
 
@@ -281,9 +296,13 @@ def publish_article(title, content, medium_api_token, medium_user_id):
     # Handle specific exceptions
     except requests.exceptions.RequestException as e:
         logger.error(f"Failed to publish article due to network error: {e}")
+        publish_sns(message=f"Failed to publish article due to network error: {e}")
         return None
     except Exception as e:
         logger.error(f"An unknown error occurred while publishing the article: {e}")
+        publish_sns(
+            message=f"An unknown error occurred while publishing the article: {e}"
+        )
         return None
 
 
@@ -350,6 +369,9 @@ def share_on_linkedin(article_url, title, linkedin_access_token, post_content):
         logger.error(
             f"An unknown error occurred while sharing the article link on LinkedIn: {e}"
         )
+        publish_sns(
+            message=f"An unknown error occurred while sharing the article link on LinkedIn: {e}"
+        )
         return {
             "statusCode": 500,
             "body": f"An unknown error occurred while sharing the article link on LinkedIn: {e}",
@@ -368,14 +390,6 @@ def post_tweet(tweet_content):
         access_token_secret = get_param("cullan_twitter_access_secret_token")
         client_secret = get_param("cullan_twitter_secret_key")
 
-        # Check if any of the retrieved credentials are empty
-        if not all([client_id, access_token, access_token_secret, client_secret]):
-            logger.error("One or more Twitter API credentials are missing.")
-            return {
-                "statusCode": 500,
-                "body": "One or more Twitter API credentials are missing.",
-            }
-
         # Create Twitter API client using Tweepy
         twitter_client = tweepy.Client(
             consumer_key=client_id,
@@ -387,6 +401,7 @@ def post_tweet(tweet_content):
         # Validate if the Twitter client was successfully created
         if not twitter_client:
             logger.error("Failed to create Twitter client.")
+            publish_sns(message="Failed to create Twitter client.")
             return {
                 "statusCode": 500,
                 "body": "Failed to create Twitter client.",
@@ -401,6 +416,9 @@ def post_tweet(tweet_content):
     # Handle general exceptions
     except Exception as e:
         logger.error(f"An unknown error occurred while attempting to post tweet: {e}")
+        publish_sns(
+            message=f"An unknown error occurred while attempting to post tweet: {e}"
+        )
         return {
             "statusCode": 500,
             "body": f"An unknown error occurred while attempting to post tweet: {e}",
@@ -411,6 +429,7 @@ def post_tweet(tweet_content):
             logger.info(f"Tweet posted successfully! Tweet ID: {response}")
         else:
             logger.warning("Tweet was not posted, and no error was raised.")
+            publish_sns(message="Tweet was not posted, and no error was raised.")
 
 
 # AWS Lambda handler function
@@ -425,14 +444,6 @@ def lambda_handler(event, context):
         MEDIUM_USER_ID = get_param(param_name="medium_user_id")
         LINKEDIN_ACCESS_TOKEN = get_param(param_name="linkedin_access_token")
 
-        # Check for missing required parameters
-        if not all([MEDIUM_API_TOKEN, MEDIUM_USER_ID, LINKEDIN_ACCESS_TOKEN]):
-            logger.error("One or more required parameters are missing.")
-            publish_sns(
-                message=f"Error occurred in ArticlePublisher: One or more required parameters are missing."
-            )
-            return {"statusCode": 400, "body": "Bad Request: Missing parameters."}
-
         # Retrieve the list of AWS services
         service_list = get_services()
         service = random.choice(service_list)
@@ -440,9 +451,6 @@ def lambda_handler(event, context):
         # Check if service list retrieval was successful
         if service_list is None:
             logger.error("Error retrieving services from AWS.")
-            publish_sns(
-                message=f"Error occurred in ArticlePublisher: Error retrieving services from AWS."
-            )
             return {
                 "statusCode": 500,
                 "body": "Internal Server Error: Error retrieving services from AWS.",
@@ -454,9 +462,6 @@ def lambda_handler(event, context):
         # Check if article generation was successful
         if article_content is None:
             logger.error("Failed to generate article from open ai.")
-            publish_sns(
-                message=f"Error occurred in ArticlePublisher: Failed to generate article from open ai."
-            )
             return {
                 "statusCode": 500,
                 "body": "Internal Server Error: Failed to generate article from open ai.",
@@ -478,9 +483,6 @@ def lambda_handler(event, context):
         # Check if article publishing was successful
         if article_url is None:
             logger.error("Failed to publish article on Medium.")
-            publish_sns(
-                message=f"Error occurred in ArticlePublisher: Failed to publish article on Medium."
-            )
             return {
                 "statusCode": 500,
                 "body": "Internal Server Error: Failed to publish article on Medium.",
@@ -494,9 +496,6 @@ def lambda_handler(event, context):
         # Check if LinkedIn post content generation was successful
         if post_content is None:
             logger.error("Failed to generate LinkedIn post content from open ai.")
-            publish_sns(
-                message=f"Error occurred in ArticlePublisher: Failed to generate LinkedIn post content from open ai."
-            )
             return {
                 "statusCode": 500,
                 "body": "Internal Server Error: Failed to generate LinkedIn post content from open ai.",
