@@ -84,7 +84,7 @@ class ArticlePublisherStack(Stack):
             "ArticlePublisherLambdaRule",
             description=f"Rule to trigger {article_publisher_lambda.function_name}",
             schedule=events.Schedule.cron(
-                week_day="2,3,4,5,6", hour="14", minute="0", month="*", year="*"
+                week_day="2,3,5", hour="14", minute="0", month="*", year="*"
             ),
             targets=[event_targets.LambdaFunction(article_publisher_lambda)],
             enabled=True,

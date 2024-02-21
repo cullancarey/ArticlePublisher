@@ -512,7 +512,7 @@ def lambda_handler(event, context):
 
         # Post a tweet with the article link
         tweet_content = f"Check out my latest blog on Medium about '{service}', all written by ChatGPT! #AWS #CloudComputing #OpenAI #GPT3 #Medium #ArtificialIntelligence #LinkedIn #Python #Boto3 #Automation #Programming #DevOps #Serverless #NLP #MachineLearning"
-        post_tweet(tweet_content=f"{tweet_content}\n{article_url}")
+        # post_tweet(tweet_content=f"{tweet_content}\n{article_url}")
 
     # Handle unexpected exceptions
     except Exception as e:
