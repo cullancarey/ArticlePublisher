@@ -442,7 +442,7 @@ def lambda_handler(event, context):
         logger.info("Retrieving API tokens and parameters.")
         MEDIUM_API_TOKEN = get_param(param_name="medium_api_token")
         MEDIUM_USER_ID = get_param(param_name="medium_user_id")
-        LINKEDIN_ACCESS_TOKEN = get_param(param_name="linkedin_access_token")
+        # LINKEDIN_ACCESS_TOKEN = get_param(param_name="linkedin_access_token")
 
         # Retrieve the list of AWS services
         service_list = get_services()
@@ -491,24 +491,24 @@ def lambda_handler(event, context):
         # article_url = "https://medium.com/@cullancarey/introducing-aws-apprunner-a-powerful-managed-service-for-application-deployment-be56f8263545"
 
         # Prepare the LinkedIn post content
-        post_content = generate_linkedin_post_content(service=service)
+        # post_content = generate_linkedin_post_content(service=service)
 
         # Check if LinkedIn post content generation was successful
-        if post_content is None:
-            logger.error("Failed to generate LinkedIn post content from open ai.")
-            return {
-                "statusCode": 500,
-                "body": "Internal Server Error: Failed to generate LinkedIn post content from open ai.",
-            }
-        logger.debug(post_content)
+        # if post_content is None:
+        #     logger.error("Failed to generate LinkedIn post content from open ai.")
+        #     return {
+        #         "statusCode": 500,
+        #         "body": "Internal Server Error: Failed to generate LinkedIn post content from open ai.",
+        #     }
+        # logger.debug(post_content)
 
         # Share the article on LinkedIn
-        share_on_linkedin(
-            article_url=article_url,
-            title=title,
-            linkedin_access_token=LINKEDIN_ACCESS_TOKEN,
-            post_content=post_content,
-        )
+        # share_on_linkedin(
+        #     article_url=article_url,
+        #     title=title,
+        #     linkedin_access_token=LINKEDIN_ACCESS_TOKEN,
+        #     post_content=post_content,
+        # )
 
         # Post a tweet with the article link
         tweet_content = f"Check out my latest blog on Medium about '{service}', all written by ChatGPT! #AWS #CloudComputing #OpenAI #GPT3 #Medium #ArtificialIntelligence #LinkedIn #Python #Boto3 #Automation #Programming #DevOps #Serverless #NLP #MachineLearning"
