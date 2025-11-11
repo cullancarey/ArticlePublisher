@@ -1,3 +1,6 @@
+# DEPRECATED
+- Medium no longer supports their api
+
 # AWS Lambda Function for Automated Blogging
 
 ## Overview
